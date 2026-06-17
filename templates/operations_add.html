@@ -1,0 +1,36 @@
+{% extends 'layout.html' %}
+{% block title %}Добавить операцию{% endblock %}
+{% block content %}
+<h1>📝 Добавить операцию</h1>
+<div class="card">
+    <form method="post">
+        <label>📅 Дата</label>
+        <input type="date" name="date" required>
+
+        <label>📌 Проект</label>
+        <select name="project_id">
+            <option value="">Без проекта</option>
+            {% for p in projects %}
+            <option value="{{ p.id }}">{{ p.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label>💰 Сумма (₽)</label>
+        <input type="number" name="amount" step="0.01" required>
+
+        <label>📊 Тип</label>
+        <select name="type">
+            <option value="income">Приход</option>
+            <option value="expense">Расход</option>
+        </select>
+
+        <label>🏷 Категория</label>
+        <input type="text" name="category" placeholder="Напр. Дивиденды, Возврат долга">
+
+        <label>💬 Комментарий</label>
+        <input type="text" name="comment" placeholder="Краткое описание">
+
+        <button type="submit">💾 Сохранить</button>
+    </form>
+</div>
+{% endblock %}

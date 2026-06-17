@@ -1,0 +1,36 @@
+{% extends 'layout.html' %}
+{% block title %}Список операций{% endblock %}
+{% block content %}
+<h1>📋 Список операций</h1>
+<div class="card">
+    <a href="{{ url_for('export_operations_excel') }}" class="export-btn" style="display:inline-block; padding:8px 16px; background:#1565C0; color:white; border-radius:5px; text-decoration:none; margin-bottom:10px;">⬇️ Экспорт Excel</a>
+</div>
+<div class="card" style="overflow-x:auto;">
+    <table style="width:100%; border-collapse:collapse; font-size:14px;">
+        <thead>
+            <tr>
+                <th>Дата</th>
+                <th>Проект</th>
+                <th>Сумма</th>
+                <th>Тип</th>
+                <th>Категория</th>
+                <th>Действие</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for op in operations %}
+            <tr>
+                <td>{{ op.date|date_format }}</td>
+                <td>{{ op.project_name or 'Без проекта' }}</td>
+                <td>{{ op.amount|format_number }}</td>
+                <td>{{ op.type == 'income' and 'Приход' or 'Расход' }}</td>
+                <td>{{ op.category or '' }}</td>
+                <td><a href="{{ url_for('delete_operation', op_id=op.id) }}" onclick="return confirm('Удалить операцию?')" style="color:red;">🗑️</a></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6">Нет операций</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

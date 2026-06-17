@@ -1,0 +1,30 @@
+{% extends 'layout.html' %}
+{% block title %}Графики{% endblock %}
+{% block content %}
+<h1>📊 Загрузка графиков платежей</h1>
+<div class="card">
+    <form method="post" enctype="multipart/form-data">
+        <label>Выберите проект</label>
+        <select name="project_id" required>
+            <option value="">— выберите —</option>
+            {% for p in projects %}
+            <option value="{{ p.id }}">{{ p.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Загрузите Excel-файл</label>
+        <input type="file" name="file" accept=".xlsx,.xls" class="file-input" required>
+
+        <button type="submit">Загрузить график</button>
+    </form>
+</div>
+<div class="card">
+    <h3>📌 Формат файла</h3>
+    <p>Файл должен содержать колонки:</p>
+    <ul>
+        <li><b>Дата</b> – дата платежа (в любом формате, распознается автоматически)</li>
+        <li><b>Сумма</b> – числовое значение</li>
+    </ul>
+    <p>Тип платежа (Доля, Займ и т.д.) будет автоматически взят из настроек проекта.</p>
+</div>
+{% endblock %}

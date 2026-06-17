@@ -1,0 +1,37 @@
+{% extends 'layout.html' %}
+{% block title %}Список проектов{% endblock %}
+{% block content %}
+<h1>📋 Список проектов</h1>
+<div class="card">
+    <form method="post" action="{{ url_for('projects_add') }}">
+        <label>Название проекта</label>
+        <input type="text" name="name" required>
+        <label>Комментарий</label>
+        <input type="text" name="comment">
+        <label>Тип (Доля, Займ, и т.д.)</label>
+        <select name="type">
+            <option>Доля</option>
+            <option>Займ</option>
+            <option>Долгий срок</option>
+            <option>Короткий срок</option>
+            <option>Пассивный доход</option>
+            <option>Перепродажа</option>
+        </select>
+        <button type="submit">➕ Добавить проект</button>
+    </form>
+</div>
+
+<div class="card">
+    <h3>Список проектов</h3>
+    {% for p in projects %}
+    <div style="padding:5px 0; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+        <span>{{ p.name }} ({{ p.type }}) {% if p.comment %}[{{ p.comment }}]{% endif %}</span>
+        <form method="post" action="{{ url_for('projects_delete', project_id=p.id) }}" style="display:inline;">
+            <button type="submit" class="inline-btn delete-btn" onclick="return confirm('Удалить проект?')">🗑️</button>
+        </form>
+    </div>
+    {% else %}
+    <i>Нет проектов</i>
+    {% endfor %}
+</div>
+{% endblock %}

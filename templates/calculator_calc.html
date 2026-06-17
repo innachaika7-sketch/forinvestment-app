@@ -1,0 +1,125 @@
+{% extends 'layout.html' %}
+{% block title %}Калькулятор доходности{% endblock %}
+{% block content %}
+<h1>🧮 Калькулятор доходности</h1>
+<div class="card">
+    <form method="post">
+        <label>💰 Сумма инвестиций (₽)</label>
+        <input type="number" name="investment" step="0.01" value="{{ investment }}" required>
+
+        <label>📌 Тип вложения</label>
+        <select name="method">
+            <option value="Доля" {% if method == 'Доля' %}selected{% endif %}>Доля</option>
+            <option value="Займ" {% if method == 'Займ' %}selected{% endif %}>Займ</option>
+        </select>
+
+        <label>🔢 Режим расчёта</label>
+        <select name="mode" id="mode">
+            <option value="sum" {% if mode == 'sum' %}selected{% endif %}>✅ Ввести сумму возврата</option>
+            <option value="share" {% if mode == 'share' %}selected{% endif %}>📊 По доле</option>
+            <option value="loan" {% if mode == 'loan' %}selected{% endif %}>🏦 По ставке</option>
+        </select>
+
+        <div id="sum_block" {% if mode != 'sum' %}style="display:none;"{% endif %}>
+            <label>📥 Ожидаемый возврат (₽)</label>
+            <input type="number" name="expected_return" step="0.01" value="{{ expected_return }}">
+        </div>
+
+        <div id="share_block" {% if mode != 'share' %}style="display:none;"{% endif %}>
+            <label>💸 Дивиденды (₽)</label>
+            <input type="number" name="dividends" step="0.01" value="{{ dividends }}">
+            <label>🏷 Продавать долю?</label>
+            <select name="sell_share" id="sell_share">
+                <option value="false" {% if sell_share == 'false' %}selected{% endif %}>Нет</option>
+                <option value="true" {% if sell_share == 'true' %}selected{% endif %}>Да</option>
+            </select>
+            <div id="exit_block" {% if sell_share != 'true' %}style="display:none;"{% endif %}>
+                <label>💰 Цена продажи (₽)</label>
+                <input type="number" name="exit_price" step="0.01" value="{{ exit_price }}">
+            </div>
+        </div>
+
+        <div id="loan_block" {% if mode != 'loan' %}style="display:none;"{% endif %}>
+            <label>📅 Срок займа (мес)</label>
+            <input type="number" name="term_months" value="{{ term_months_loan }}">
+            <label>💸 Годовая ставка (%)</label>
+            <input type="number" name="annual_rate" step="0.01" value="{{ annual_rate }}">
+        </div>
+
+        <div id="term_block" {% if mode not in ('sum', 'share') %}style="display:none;"{% endif %}>
+            <label>⏱ Срок для годовой доходности (мес)</label>
+            <input type="number" name="term_months" value="{{ term_months_common }}">
+        </div>
+
+        <label>🏦 Депозит для сравнения (%)</label>
+        <input type="number" name="deposit_rate" step="0.01" value="{{ deposit_rate }}">
+
+        <label><input type="checkbox" name="discount_enabled" {% if discount_enabled %}checked{% endif %}> 📉 Дисконтирование (NPV)</label>
+        <div id="discount_block" {% if not discount_enabled %}style="display:none;"{% endif %}>
+            <label>Ставка дисконтирования (%)</label>
+            <input type="number" name="discount_rate" step="0.01" value="{{ discount_rate }}">
+        </div>
+
+        <button type="submit">Рассчитать и сохранить</button>
+    </form>
+</div>
+
+{% if result %}
+<div class="card result">
+    <h3>📊 Результат</h3>
+    <div><b>Вложено:</b> {{ result.investment|format_number }} ₽</div>
+    <div><b>Получено:</b> {{ result.total_return|format_number }} ₽</div>
+    <div><b>Чистая прибыль:</b> <span class="{% if result.profit >= 0 %}positive{% else %}negative{% endif %}">{{ result.profit|format_number }} ₽</span></div>
+    <div><b>ROI:</b> {{ result.roi|round(2) }}%</div>
+    <div><b>Годовая доходность (CAGR):</b> {{ result.annual_return|round(2) if result.annual_return is not none else '?' }}%</div>
+    <div><b>IRR:</b> {{ result.irr|round(2) if result.irr is not none else '?' }}%</div>
+    <div><b>Сравнение с депозитом {{ result.deposit_rate }}%:</b> <span class="{% if result.deposit_comparison >= 0 %}positive{% else %}negative{% endif %}">{{ result.deposit_comparison|format_number }} ₽</span></div>
+    {% if result.discount_enabled and result.npv is not none %}
+    <div><b>NPV ({{ result.discount_rate }}%):</b> {{ result.npv|format_number }} ₽</div>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if error %}
+<div class="card" style="color:red;">{{ error }}</div>
+{% endif %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const mode = document.getElementById('mode');
+        const sumBlock = document.getElementById('sum_block');
+        const shareBlock = document.getElementById('share_block');
+        const loanBlock = document.getElementById('loan_block');
+        const termBlock = document.getElementById('term_block');
+        const sellShare = document.getElementById('sell_share');
+        const exitBlock = document.getElementById('exit_block');
+        const discountCheck = document.querySelector('input[name="discount_enabled"]');
+        const discountBlock = document.getElementById('discount_block');
+
+        function updateBlocks() {
+            const val = mode.value;
+            sumBlock.style.display = val === 'sum' ? 'block' : 'none';
+            shareBlock.style.display = val === 'share' ? 'block' : 'none';
+            loanBlock.style.display = val === 'loan' ? 'block' : 'none';
+            termBlock.style.display = (val === 'sum' || val === 'share') ? 'block' : 'none';
+            if (val === 'share') {
+                exitBlock.style.display = sellShare.value === 'true' ? 'block' : 'none';
+            } else {
+                exitBlock.style.display = 'none';
+            }
+        }
+
+        mode.addEventListener('change', updateBlocks);
+        sellShare.addEventListener('change', function() {
+            if (mode.value === 'share') {
+                exitBlock.style.display = this.value === 'true' ? 'block' : 'none';
+            }
+        });
+        discountCheck.addEventListener('change', function() {
+            discountBlock.style.display = this.checked ? 'block' : 'none';
+        });
+
+        updateBlocks();
+    });
+</script>
+{% endblock %}

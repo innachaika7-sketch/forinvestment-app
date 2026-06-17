@@ -1,0 +1,48 @@
+{% extends 'layout.html' %}
+{% block title %}Ввод проектов{% endblock %}
+{% block content %}
+<h1>📁 Ввод проектов</h1>
+<div class="card">
+    <form method="post">
+        <input type="hidden" name="action" value="add">
+        <label>Название проекта</label>
+        <input type="text" name="name" required>
+        <label>Комментарий</label>
+        <input type="text" name="comment">
+        <label>Тип</label>
+        <select name="type">
+            <option>Доля</option>
+            <option>Займ</option>
+        </select>
+        <label>Доля / процент (%)</label>
+        <input type="number" name="share_percent" step="0.01" placeholder="Напр. 25.5">
+        <label>Сумма инвестиций (₽)</label>
+        <input type="number" name="investment_amount" step="0.01" placeholder="Напр. 18 000 000">
+        <label>Номер договора</label>
+        <input type="text" name="contract_number" placeholder="Напр. Д-001">
+        <button type="submit">➕ Добавить проект</button>
+    </form>
+</div>
+
+<div class="card">
+    <h3>Список проектов</h3>
+    {% for p in projects %}
+    <div style="padding:5px 0; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+        <span>
+            <b>{{ p.name }}</b> ({{ p.type }})
+            {% if p.share_percent %} | Доля: {{ p.share_percent }}%{% endif %}
+            {% if p.investment_amount %} | Сумма: {{ p.investment_amount|format_number }} ₽{% endif %}
+            {% if p.contract_number %} | Дог. {{ p.contract_number }}{% endif %}
+            {% if p.comment %} [{{ p.comment }}]{% endif %}
+        </span>
+        <form method="post" style="display:inline;">
+            <input type="hidden" name="action" value="delete">
+            <input type="hidden" name="project_id" value="{{ p.id }}">
+            <button type="submit" class="inline-btn delete-btn" onclick="return confirm('Удалить проект?')">🗑️</button>
+        </form>
+    </div>
+    {% else %}
+    <i>Нет проектов</i>
+    {% endfor %}
+</div>
+{% endblock %}

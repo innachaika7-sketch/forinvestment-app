@@ -1,0 +1,19 @@
+{% extends 'layout.html' %}
+{% block title %}Импорт платежей{% endblock %}
+{% block content %}
+<h1>📥 Импорт графика платежей</h1>
+<div class="card">
+    <form method="post" enctype="multipart/form-data">
+        <label>Выберите CSV файл с платежами</label>
+        <input type="file" name="file" accept=".csv" class="file-input" required>
+        <button type="submit">Загрузить и импортировать</button>
+    </form>
+</div>
+
+<div class="card">
+    <h3>📌 Формат CSV</h3>
+    <p>Колонки: <code>Дата, Проект, Сумма, Тип, Комментарий</code></p>
+    <p>Проект может быть пустым или «Без проекта».</p>
+    <p>Даты принимаются в форматах: <code>ДД.ММ.ГГГГ</code>, <code>ДД/ММ/ГГ</code>, <code>ДД.ММ.ГГ</code>.</p>
+</div>
+{% endblock %}

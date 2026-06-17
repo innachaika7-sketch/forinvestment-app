@@ -1,0 +1,87 @@
+{% extends 'layout.html' %}
+{% block title %}Дашборд{% endblock %}
+{% block content %}
+<h1>📊 Дашборд</h1>
+
+<div class="card">
+    <div><b>Всего инвестировано:</b> {{ total_out|format_number }} ₽</div>
+    <div><b>Всего возвращено:</b> {{ total_in|format_number }} ₽</div>
+    <div><b>Чистая прибыль:</b> <span class="{% if profit >= 0 %}positive{% else %}negative{% endif %}">{{ profit|format_number }} ₽</span></div>
+    <div><b>К-т возврата:</b> {{ roi_portfolio|round(2) }}%</div>
+</div>
+
+{% if upcoming %}
+<div class="card">
+    <div class="toggle-header" onclick="toggleBlock('upcomingBlock')" style="border: 2px solid #1976D2; padding:10px; border-radius:8px; cursor:pointer;">
+        <h3 style="margin:0;">📅 Ближайший ожидаемый платёж <span style="float:right;">▼</span></h3>
+    </div>
+    <div id="upcomingBlock" class="toggle-content open">
+        <div><b>Дата:</b> {{ upcoming.date|date_format }}</div>
+        <div><b>Сумма:</b> {{ upcoming.amount|format_number }} ₽</div>
+        <div><b>Проект:</b> {{ upcoming.project or 'Без проекта' }}</div>
+    </div>
+</div>
+{% endif %}
+
+{% if overdue_summary %}
+<div class="card">
+    <div class="toggle-header" onclick="toggleBlock('overdueBlock')" style="border: 2px solid #c62828; padding:10px; border-radius:8px; cursor:pointer;">
+        <h3 style="margin:0;">⚠️ Просроченные платежи <span style="float:right;">▼</span></h3>
+    </div>
+    <div id="overdueBlock" class="toggle-content open">
+        {% for project, data in overdue_summary.items() %}
+        <div style="padding:5px 0; border-bottom:1px solid #eee;">
+            <b>{{ project }}</b><br>
+            Сумма просрочки: {{ data.total|format_number }} ₽<br>
+            Самый старый платёж: {{ data.oldest|date_format }}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+<div class="card" style="border: 2px solid #2E7D32;">
+    <h3>✅ Нет просроченных платежей</h3>
+</div>
+{% endif %}
+
+<div class="card">
+    <h3>📌 Проекты</h3>
+    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; font-size:0.9em; background:#f0f0f0; padding:6px; border-radius:5px;">
+        <a href="{{ url_for('dashboard', sort='invested', order='desc' if sort_by!='invested' or order=='asc' else 'asc') }}" style="flex:1; text-align:center; text-decoration:none; color:{% if sort_by=='invested' %}#1976D2{% else %}#333{% endif %}; font-weight:{% if sort_by=='invested' %}bold{% else %}normal{% endif %};">
+            Вложено {% if sort_by=='invested' %}{{ '▲' if order=='desc' else '▼' }}{% endif %}
+        </a>
+        <a href="{{ url_for('dashboard', sort='returned', order='desc' if sort_by!='returned' or order=='asc' else 'asc') }}" style="flex:1; text-align:center; text-decoration:none; color:{% if sort_by=='returned' %}#1976D2{% else %}#333{% endif %}; font-weight:{% if sort_by=='returned' %}bold{% else %}normal{% endif %};">
+            Возвращено {% if sort_by=='returned' %}{{ '▲' if order=='desc' else '▼' }}{% endif %}
+        </a>
+        <a href="{{ url_for('dashboard', sort='net', order='desc' if sort_by!='net' or order=='asc' else 'asc') }}" style="flex:1; text-align:center; text-decoration:none; color:{% if sort_by=='net' %}#1976D2{% else %}#333{% endif %}; font-weight:{% if sort_by=='net' %}bold{% else %}normal{% endif %};">
+            Результат {% if sort_by=='net' %}{{ '▲' if order=='desc' else '▼' }}{% endif %}
+        </a>
+        <a href="{{ url_for('dashboard', sort='roi', order='desc' if sort_by!='roi' or order=='asc' else 'asc') }}" style="flex:1; text-align:center; text-decoration:none; color:{% if sort_by=='roi' %}#1976D2{% else %}#333{% endif %}; font-weight:{% if sort_by=='roi' %}bold{% else %}normal{% endif %};">
+            К-т возврата {% if sort_by=='roi' %}{{ '▲' if order=='desc' else '▼' }}{% endif %}
+        </a>
+    </div>
+    {% for p in projects %}
+    <div style="padding:8px 0; border-bottom:1px solid #eee;">
+        <b>{{ p.name }}</b>
+        {% if p.contract_number %}(дог. {{ p.contract_number }}){% endif %}
+        <br>
+        Вложено: {{ p.invested|format_number }} ₽<br>
+        Возвращено: {{ p.returned|format_number }} ₽<br>
+        <span class="{% if p.net >= 0 %}positive{% else %}negative{% endif %}">Результат: {{ p.net|format_number }} ₽</span><br>
+        <b>К-т возврата:</b> <span class="{% if p.roi >= 0 %}positive{% else %}negative{% endif %}">{{ p.roi|round(2) }}%</span>
+        {% if p.share_percent %}<br>Доля/ставка: {{ p.share_percent }}%{% endif %}
+        {% if p.investment_amount %}<br>Сумма инв.: {{ p.investment_amount|format_number }} ₽{% endif %}
+    </div>
+    {% else %}
+    <i>Нет проектов</i>
+    {% endfor %}
+</div>
+<script>
+function toggleBlock(id) {
+    var el = document.getElementById(id);
+    if (el) {
+        el.classList.toggle('open');
+    }
+}
+</script>
+{% endblock %}

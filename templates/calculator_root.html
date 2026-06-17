@@ -1,0 +1,10 @@
+{% extends 'layout.html' %}
+{% block title %}Калькулятор{% endblock %}
+{% block content %}
+<h1>🧮 Калькулятор</h1>
+<div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px;">
+    <a href="{{ url_for('calculator') }}" class="active" style="flex:1; background:#2E7D32; color:white; padding:10px; text-align:center; border-radius:8px; text-decoration:none;">🧮 Калькулятор</a>
+    <a href="{{ url_for('history') }}" style="flex:1; background:#6A1B9A; color:white; padding:10px; text-align:center; border-radius:8px; text-decoration:none;">📜 История</a>
+</div>
+<p>Выберите раздел выше</p>
+{% endblock %}

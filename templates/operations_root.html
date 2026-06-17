@@ -1,0 +1,11 @@
+{% extends 'layout.html' %}
+{% block title %}Операции{% endblock %}
+{% block content %}
+<h1>📋 Операции</h1>
+<div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px;">
+    <a href="{{ url_for('add_operation') }}" style="flex:1; background:#1976D2; color:white; padding:10px; text-align:center; border-radius:8px; text-decoration:none;">📝 Ввод</a>
+    <a href="{{ url_for('operations_list') }}" style="flex:1; background:#757575; color:white; padding:10px; text-align:center; border-radius:8px; text-decoration:none;">📋 Список</a>
+    <a href="{{ url_for('export_operations_excel') }}" style="flex:1; background:#1565C0; color:white; padding:10px; text-align:center; border-radius:8px; text-decoration:none;">📊 Экспорт Excel</a>
+</div>
+<p>Выберите раздел выше</p>
+{% endblock %}

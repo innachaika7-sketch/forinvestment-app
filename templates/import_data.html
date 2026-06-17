@@ -1,0 +1,24 @@
+{% extends 'layout.html' %}
+{% block title %}Импорт CSV{% endblock %}
+{% block content %}
+<h1>📥 Импорт данных из CSV</h1>
+<div class="card">
+    <form method="post" enctype="multipart/form-data">
+        <label>Тип импорта</label>
+        <select name="import_type">
+            <option value="operations">Операции (приход/расход)</option>
+            <option value="payments">Платежи (график платежей)</option>
+        </select>
+        <label>Выберите CSV файл</label>
+        <input type="file" name="file" accept=".csv" class="file-input" required>
+        <button type="submit">Загрузить и импортировать</button>
+    </form>
+</div>
+<div class="card">
+    <h3>📌 Формат CSV</h3>
+    <p><b>Для операций:</b> колонки: <code>Дата, Проект, Сумма, Тип, Категория, Комментарий</code></p>
+    <p>Тип: <code>income</code> (приход) или <code>expense</code> (расход)</p>
+    <p><b>Для платежей:</b> колонки: <code>Дата, Проект, Сумма, Тип, Комментарий</code></p>
+    <p>Проект может быть пустым (тогда операция без проекта).</p>
+</div>
+{% endblock %}

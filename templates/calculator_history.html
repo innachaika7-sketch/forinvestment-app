@@ -1,0 +1,40 @@
+{% extends 'layout.html' %}
+{% block title %}История расчётов{% endblock %}
+{% block content %}
+<h1>📜 История расчётов</h1>
+<div class="card">
+    <a href="{{ url_for('calculator_export') }}" class="export-btn" style="display:inline-block; padding:8px 16px; background:#1565C0; color:white; border-radius:5px; text-decoration:none; margin-bottom:10px;">⬇️ Экспорт CSV</a>
+</div>
+<div class="card" style="overflow-x:auto;">
+    <table style="width:100%; border-collapse:collapse; font-size:14px;">
+        <thead>
+            <tr>
+                <th>Сумма</th>
+                <th>Метод</th>
+                <th>Срок</th>
+                <th>Возврат</th>
+                <th>Прибыль</th>
+                <th>IRR</th>
+                <th>NPV</th>
+                <th>Действие</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rec in records %}
+            <tr>
+                <td>{{ rec.investment|format_money }}</td>
+                <td>{{ rec.method }}</td>
+                <td>{{ rec.term_months }} мес.</td>
+                <td>{{ rec.total_return|format_money }}</td>
+                <td class="{% if rec.profit >= 0 %}positive{% else %}negative{% endif %}">{{ rec.profit|format_money }}</td>
+                <td>{{ rec.irr|round(2) if rec.irr is not none else '-' }}%</td>
+                <td>{{ rec.npv|format_money if rec.npv is not none else '-' }}</td>
+                <td><a href="{{ url_for('calculator_delete', record_id=rec.id) }}" onclick="return confirm('Удалить запись?')" style="color:red;">🗑️</a></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="8">Нет записей</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
