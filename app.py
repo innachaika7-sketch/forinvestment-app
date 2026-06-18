@@ -4,7 +4,6 @@ import database as db
 import io
 import pandas as pd
 import os
-import json
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here'
@@ -58,7 +57,7 @@ def dashboard():
     total_in = sum(p['total_in'] for p in projects_agg)
     total_out = sum(p['total_out'] for p in projects_agg)
     profit = total_in - total_out
-    roi_portfolio = (total_in / total_out * 100) if total_out > 0 else 0
+    roi_portfolio = (profit / total_out * 100) if total_out > 0 else 0
 
     payments = db.get_payments()
     today = date.today()
@@ -84,12 +83,13 @@ def dashboard():
     for p in projects_agg:
         invested = p['total_out']
         returned = p['total_in']
-        roi = ((returned - invested) / invested * 100) if invested > 0 else 0
+        net = returned - invested
+        roi = (net / invested * 100) if invested > 0 else 0
         projects_with_roi.append({
             'name': p['name'],
             'invested': invested,
             'returned': returned,
-            'net': returned - invested,
+            'net': net,
             'roi': roi,
             'type': p.get('type', 'Доля'),
             'share_percent': p.get('share_percent'),
@@ -191,9 +191,10 @@ def calculator():
                 cash_flows.append({'months': term_months, 'amount': expected_return})
             elif mode == 'share':
                 total_return = dividends + (exit_price if sell_share == 'true' else 0)
-                cash_flows.append({'months': term_months // 2 if term_months else 0, 'amount': dividends})
-                if sell_share == 'true':
-                    cash_flows.append({'months': term_months, 'amount': exit_price})
+                if term_months > 0:
+                    cash_flows.append({'months': term_months // 2, 'amount': dividends})
+                    if sell_share == 'true':
+                        cash_flows.append({'months': term_months, 'amount': exit_price})
             elif mode == 'loan':
                 years = term_months / 12
                 total_return = investment * (1 + (annual_rate / 100) * years)
@@ -202,7 +203,7 @@ def calculator():
                 raise ValueError('Неизвестный режим')
 
             profit = total_return - investment
-            roi = (total_return / investment - 1) * 100 if investment > 0 else 0
+            roi = (profit / investment * 100) if investment > 0 else 0
 
             annual_return = None
             if term_months > 0 and investment > 0:
@@ -211,6 +212,9 @@ def calculator():
 
             def calculate_irr(investment, cash_flows):
                 if not cash_flows or investment <= 0:
+                    return None
+                # Проверяем, есть ли положительные потоки
+                if sum(cf['amount'] for cf in cash_flows) <= 0:
                     return None
                 periods = [{'years': cf['months'] / 12, 'amount': cf['amount']} for cf in cash_flows]
                 guess = 0.1
