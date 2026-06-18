@@ -1,10 +1,6 @@
 {% extends 'layout.html' %}
 {% block title %}Калькулятор{% endblock %}
 {% block content %}
-<div class="sub-nav">
-    <a href="{{ url_for('calculator') }}" class="active">🧮 Калькулятор</a>
-    <a href="{{ url_for('history') }}">📜 История калькулятора</a>
-</div>
 <h1>🧮 Калькулятор</h1>
 <div class="card">
     <form method="post">
@@ -45,14 +41,14 @@
 
         <div id="loan_block" {% if mode != 'loan' %}style="display:none;"{% endif %}>
             <label>📅 Срок займа (мес)</label>
-            <input type="number" name="term_months" value="{{ term_months_loan }}">
+            <input type="number" name="term_months_loan" value="{{ term_months_loan }}">
             <label>💸 Годовая ставка (%)</label>
             <input type="number" name="annual_rate" step="0.01" value="{{ annual_rate }}">
         </div>
 
         <div id="term_block" {% if mode not in ('sum', 'share') %}style="display:none;"{% endif %}>
-            <label>⏱ Срок для годовой доходности (мес)</label>
-            <input type="number" name="term_months" value="{{ term_months_common }}">
+            <label>⏱ Срок проекта (мес)</label>
+            <input type="number" name="term_months_common" value="{{ term_months_common }}">
         </div>
 
         <label>🏦 Депозит для сравнения (%)</label>
@@ -75,7 +71,7 @@
     <div><b>Получено:</b> {{ result.total_return|format_number }} ₽</div>
     <div><b>Чистая прибыль:</b> <span class="{% if result.profit >= 0 %}positive{% else %}negative{% endif %}">{{ result.profit|format_number }} ₽</span></div>
     <div><b>ROI:</b> {{ result.roi|round(2) }}%</div>
-    <div><b>Годовая доходность (CAGR):</b> {{ result.annual_return|round(2) if result.annual_return is not none else '?' }}%</div>
+    <div><b>Годовая доходность:</b> {{ result.annual_return|round(2) if result.annual_return is not none else '?' }}%</div>
     <div><b>IRR:</b> {{ result.irr|round(2) if result.irr is not none else '?' }}%</div>
     <div><b>Сравнение с депозитом {{ result.deposit_rate }}%:</b> <span class="{% if result.deposit_comparison >= 0 %}positive{% else %}negative{% endif %}">{{ result.deposit_comparison|format_number }} ₽</span></div>
     {% if result.discount_enabled and result.npv is not none %}
